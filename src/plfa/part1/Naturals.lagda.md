@@ -431,6 +431,8 @@ Compute `3 + 4`, writing out your reasoning as a chain of equations, using the e
 
 ```
 -- Your code goes here
+_ : 3 + 4 ≡ 7
+_ = refl
 ```
 
 
@@ -493,6 +495,20 @@ Compute `3 * 4`, writing out your reasoning as a chain of equations, using the e
 
 ```
 -- Your code goes here
+_ : 3 * 4 ≡ 12
+_ = begin
+      3 * 4
+    ≡⟨⟩
+      4 + (2 * 4)
+    ≡⟨⟩
+      4 + (4 + (1 * 4))
+    ≡⟨⟩
+      4 + (4 + (4 + (0 * 4)))
+    ≡⟨⟩
+      4 + (4 + (4 + 0))
+    ≡⟨⟩
+      12
+  ∎
 ```
 
 
@@ -507,9 +523,13 @@ Check that `3 ^ 4` is `81`.
 
 ```
 -- Your code goes here
+_^_ : ℕ -> ℕ -> ℕ
+_ ^ zero = 1
+m ^ (suc n) = m * (m ^ n)
+
+_ : 3 ^ 4 ≡ 81
+_ = refl
 ```
-
-
 
 ## Monus
 
@@ -572,6 +592,33 @@ Compute `5 ∸ 3` and `3 ∸ 5`, writing out your reasoning as a chain of equati
 
 ```
 -- Your code goes here
+_ : 5 ∸ 3 ≡ 2
+_ =
+  begin
+    5 ∸ 3
+  ≡⟨⟩
+    4 ∸ 2
+  ≡⟨⟩
+    3 ∸ 1
+  ≡⟨⟩
+    2 ∸ 0
+  ≡⟨⟩
+    2
+  ∎
+
+_ : 3 ∸ 5 ≡ 0
+_ =
+  begin
+    3 ∸ 5
+  ≡⟨⟩
+    2 ∸ 4
+  ≡⟨⟩
+    1 ∸ 3
+  ≡⟨⟩
+    0 ∸ 2
+  ≡⟨⟩
+    0
+  ∎
 ```
 
 
@@ -880,6 +927,71 @@ data Bin : Set where
   ⟨⟩ : Bin
   _O : Bin → Bin
   _I : Bin → Bin
+
+inc : Bin -> Bin
+inc ⟨⟩ = ⟨⟩ I
+inc (b O) = b I
+inc (b I) = (inc b) O
+
+_ : inc (⟨⟩ O) ≡ ⟨⟩ I
+_ = refl
+
+_ : inc (⟨⟩ I) ≡ ⟨⟩ I O
+_ = refl
+
+_ : inc (⟨⟩ I O) ≡ ⟨⟩ I I
+_ = refl
+
+_ : inc (⟨⟩ I I) ≡ ⟨⟩ I O O
+_ = refl
+
+_ : inc (⟨⟩ I O I I) ≡ ⟨⟩ I I O O
+_ = refl
+
+to : ℕ -> Bin
+to zero = ⟨⟩ O
+to (suc n) = inc (to n)
+
+_ : to 0 ≡ ⟨⟩ O
+_ = refl
+
+_ : to 1 ≡ ⟨⟩ I
+_ = refl
+
+_ : to 2 ≡ ⟨⟩ I O
+_ = refl
+
+_ : to 3 ≡ ⟨⟩ I I
+_ = refl
+
+_ : to 4 ≡ ⟨⟩ I O O
+_ = refl
+
+_ : to 5 ≡ ⟨⟩ I O I
+_ = refl
+
+from : Bin -> ℕ
+from ⟨⟩ = 0
+from (b O) = 2 * (from b)
+from (b I) = 2 * (from b) + 1
+
+_ : from (⟨⟩ O) ≡ 0
+_ = refl
+
+_ : from (⟨⟩ I) ≡ 1
+_ = refl
+
+_ : from (⟨⟩ I O) ≡ 2
+_ = refl
+
+_ : from (⟨⟩ I I) ≡ 3
+_ = refl
+
+_ : from (⟨⟩ I O O) ≡ 4
+_ = refl
+
+_ : from (⟨⟩ I O I) ≡ 5
+_ = refl
 ```
 For instance, the bitstring
 
