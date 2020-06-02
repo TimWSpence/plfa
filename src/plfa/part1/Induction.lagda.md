@@ -765,6 +765,12 @@ right.
 
 ## Building proofs interactively
 
+```
++-assoc′' : ∀ (m n p : ℕ) → (m + n) + p ≡ m + (n + p)
++-assoc′' zero n p = refl
++-assoc′' (suc m) n p rewrite +-assoc′' m n p = refl
+```
+
 It is instructive to see how to build the alternative proof of
 associativity using the interactive features of Agda in Emacs.
 Begin by typing:
@@ -869,6 +875,12 @@ is associative and commutative.
 
 ```
 -- Your code goes here
++-swap : ∀ (m n p : ℕ) → m + (n + p) ≡ n + (m + p)
++-swap zero n p = refl
++-swap (suc m) n p rewrite +-comm m (n + p)
+  | +-comm m p
+  | +-suc n (p + m)
+  | +-assoc n p m = refl
 ```
 
 
@@ -882,6 +894,9 @@ for all naturals `m`, `n`, and `p`.
 
 ```
 -- Your code goes here
+*-distrib-+ : ∀ (m n p : ℕ) -> (m + n) * p ≡ m * p + n * p
+*-distrib-+ zero n p = refl
+*-distrib-+ (suc m) n p rewrite *-distrib-+ m n p | +-assoc p (m * p) (n * p)= refl
 ```
 
 
@@ -895,6 +910,9 @@ for all naturals `m`, `n`, and `p`.
 
 ```
 -- Your code goes here
+*-assoc : ∀ (m n p : ℕ) -> (m * n) * p ≡ m * (n * p)
+*-assoc zero n p = refl
+*-assoc (suc m) n p rewrite *-distrib-+ n (m * n) p | *-assoc m n p = refl
 ```
 
 
@@ -909,6 +927,62 @@ you will need to formulate and prove suitable lemmas.
 
 ```
 -- Your code goes here
+*-zero-l : ∀ (n : ℕ) → 0 * n ≡ 0
+*-zero-l n = refl
+
+*-zero-r : ∀ (n : ℕ) → n * 0 ≡ 0
+*-zero-r zero = refl
+*-zero-r (suc n) rewrite *-distrib-+ n 1 0 | *-zero-r n = refl
+
+*-distrib-+' : ∀ (m n p : ℕ) → m * (n + p) ≡ m * n + m * p
+*-distrib-+' zero n p = refl
+*-distrib-+' (suc m) n p rewrite (*-distrib-+' m n p) =
+  begin
+    n + p + (m * n + m * p)
+  ≡⟨ +-assoc n p (m * n + m * p) ⟩
+    n + (p + (m * n + m * p))
+  ≡⟨ cong (n +_) (+-comm p (m * n + m * p)) ⟩
+    n + ((m * n + m * p) + p)
+  ≡⟨ cong (n +_) (+-assoc (m * n) (m * p) p) ⟩
+    n + (m * n + (m * p + p))
+  ≡⟨ sym (+-assoc n (m * n) (m * p + p)) ⟩
+    n + m * n + (m * p + p)
+  ≡⟨ cong (n + m * n +_) (+-comm (m * p) p) ⟩
+    n + m * n + (p + m * p)
+  ≡⟨⟩
+    refl
+
+*-identity-r : ∀ (n : ℕ) → n * 1 ≡ n
+*-identity-r zero = refl
+*-identity-r (suc n) rewrite (cong suc (*-identity-r n)) = refl
+
+*-comm : ∀ (m n : ℕ) → m * n ≡ n * m
+*-comm zero n =
+  begin
+    0 * n
+  ≡⟨ *-zero-l n ⟩
+    0
+  ≡⟨ sym (*-zero-r n) ⟩
+    n * 0
+  ∎
+*-comm (suc m) n =
+  begin
+    (suc m) * n
+  ≡⟨⟩
+    n + m * n
+  ≡⟨ cong (n +_) (*-comm m n) ⟩
+    n + n * m
+  ≡⟨ +-comm n (n * m) ⟩
+    n * m + n
+  ≡⟨ cong ((n * m) +_) (sym (*-identity-r n)) ⟩
+    n * m + n * 1
+  ≡⟨ sym (*-distrib-+' n m 1) ⟩
+    n * (m + 1)
+  ≡⟨ cong (n *_) (+-comm m 1)⟩
+    n * (1 + m)
+  ≡⟨⟩
+    n * (suc m)
+  ∎
 ```
 
 
@@ -922,8 +996,10 @@ for all naturals `n`. Did your proof require induction?
 
 ```
 -- Your code goes here
+zero-∸ : ∀ (n : ℕ) -> 0 ∸ n ≡ 0
+zero-∸ zero = refl
+zero-∸ (suc n) = refl
 ```
-
 
 #### Exercise `∸-+-assoc` (practice) {#monus-plus-assoc}
 
@@ -935,8 +1011,44 @@ for all naturals `m`, `n`, and `p`.
 
 ```
 -- Your code goes here
-```
 
++-identity-l : ∀ (n : ℕ) → 0 + n ≡ n
++-identity-l zero = refl
++-identity-l (suc n) = refl
+
+∸-+-assoc : ∀ (m n p : ℕ) -> m ∸ n ∸ p ≡ m ∸ (n + p)
+∸-+-assoc zero n p =
+  begin
+    0 ∸ n ∸ p
+  ≡⟨⟩
+    (0 ∸ n) ∸ p
+  ≡⟨ cong (_∸ p) (zero-∸ n) ⟩
+    0 ∸ p
+  ≡⟨ zero-∸ p ⟩
+    0
+  ≡⟨ sym (zero-∸ (n + p)) ⟩
+    0 ∸ (n + p)
+  ∎
+∸-+-assoc (suc m) zero p =
+  begin
+    (suc m) ∸ zero ∸ p
+  ≡⟨⟩
+    ((suc m) ∸ zero) ∸ p
+  ≡⟨⟩
+    (suc m) ∸ p
+  ≡⟨ cong ((suc m) ∸_) (+-identity-l p) ⟩
+    (suc m) ∸ (0 + p)
+  ≡⟨⟩
+    refl
+∸-+-assoc (suc m) (suc n) p =
+  begin
+    (suc m ∸ suc n) ∸ p
+  ≡⟨⟩
+    (m ∸ n) ∸ p
+  ≡⟨ ∸-+-assoc m n p ⟩
+    m ∸ (n + p)
+  ∎
+```
 
 #### Exercise `+*^` (stretch)
 
