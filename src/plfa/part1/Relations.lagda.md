@@ -591,6 +591,12 @@ Show that strict inequality is transitive.
 
 ```
 -- Your code goes here
+<-trans : ∀ {m n p : ℕ} → (m < n)
+                        → (n < p)
+                        ----------
+                        → (m < p)
+<-trans z<s (s<s n<p) = z<s
+<-trans (s<s m<n) (s<s n<p) = s<s (<-trans m<n n<p)
 ```
 
 #### Exercise `trichotomy` (practice) {#trichotomy}
@@ -609,6 +615,28 @@ similar to that used for totality.
 
 ```
 -- Your code goes here
+data Trichotomy (m n : ℕ) : Set where
+  lt :
+    m < n
+    ------
+    → Trichotomy m n
+  eq :
+    m ≡ n
+    -----
+    → Trichotomy m n
+  gt :
+    n < m
+    -----
+    → Trichotomy m n
+
+<-trichotomy : ∀ (m n  : ℕ) → Trichotomy m n
+<-trichotomy zero zero = eq refl
+<-trichotomy zero (suc n) = lt z<s
+<-trichotomy (suc m) zero = gt z<s
+<-trichotomy (suc m) (suc n) with <-trichotomy m n
+...                             | lt (m<n) = lt (s<s m<n)
+...                             | eq refl  = eq refl
+...                             | gt n>m   = gt (s<s n>m)
 ```
 
 #### Exercise `+-mono-<` (practice) {#plus-mono-less}
@@ -618,6 +646,25 @@ As with inequality, some additional definitions may be required.
 
 ```
 -- Your code goes here
++-mono-l-< : ∀ (m n p : ℕ)
+  → m < n
+  -----
+  → p + m < p + n
++-mono-l-< m n zero m<n = m<n
++-mono-l-< m n (suc p) m<n = s<s (+-mono-l-< m n p m<n)
+
++-mono-r-< : ∀ ( m n p : ℕ)
+  → m < n
+  -----
+  → m + p < n + p
++-mono-r-< m n p m<n rewrite +-comm m p | +-comm n p = +-mono-l-< m n p m<n
+
++-mono-< : ∀ (m n p q : ℕ )
+  → m < n
+  → p < q
+  ------
+  → m + p < n + q
++-mono-< m n p q m<n p<q = <-trans (+-mono-r-< m n p m<n) (+-mono-l-< p q n p<q)
 ```
 
 #### Exercise `≤-iff-<` (recommended) {#leq-iff-less}
@@ -626,6 +673,13 @@ Show that `suc m ≤ n` implies `m < n`, and conversely.
 
 ```
 -- Your code goes here
+<-if-≤ : ∀ (m n : ℕ) → (suc m) ≤ n → m < n
+<-if-≤ zero .(suc _) (s≤s sm<=n) = z<s
+<-if-≤ (suc m) .(suc _) (s≤s sm<=n) = s<s (<-if-≤ m _ sm<=n)
+
+≤-if-< : ∀ (m n : ℕ) → m < n → (suc m) ≤ n
+≤-if-< zero .(suc _) z<s = s≤s z≤n
+≤-if-< (suc m) .(suc _) (s<s m<n) = s≤s (≤-if-< m _ m<n)
 ```
 
 #### Exercise `<-trans-revisited` (practice) {#less-trans-revisited}
@@ -636,6 +690,31 @@ the fact that inequality is transitive.
 
 ```
 -- Your code goes here
+≤-suc : ∀ ( n : ℕ ) → n ≤ (suc n)
+≤-suc zero = z≤n
+≤-suc (suc n) = s≤s (≤-suc n)
+
+<-trans-revisited : ∀ {m n p : ℕ}
+  → m < n
+  → n < p
+  -----
+  → m < p
+<-trans-revisited {m} {n} {p} m<n n<p = m<p
+  where
+  sucm≤n : (suc m) ≤ n
+  sucm≤n = ≤-if-< m n m<n
+
+  sucm≤sucn : (suc m) ≤ (suc n)
+  sucm≤sucn = ≤-trans sucm≤n (≤-suc n)
+
+  sucn≤p : (suc n) ≤ p
+  sucn≤p = ≤-if-< n p n<p
+
+  sucm≤p : (suc m) ≤ p
+  sucm≤p = ≤-trans sucm≤sucn sucn≤p
+
+  m<p : m < p
+  m<p = <-if-≤ m p sucm≤p
 ```
 
 
@@ -743,6 +822,22 @@ Show that the sum of two odd numbers is even.
 
 ```
 -- Your code goes here
+e+o≡o : ∀ { m n : ℕ }
+  → even m
+  → odd n
+  -----
+  → odd (m + n)
+
+o+o≡e : ∀ {m n : ℕ}
+  → odd m
+  → odd n
+  -----
+  → even (m + n)
+
+e+o≡o zero on = on
+e+o≡o (suc x) on = suc (o+o≡e x on)
+
+o+o≡e (suc x) on = suc (e+o≡o x on)
 ```
 
 #### Exercise `Bin-predicates` (stretch) {#Bin-predicates}
